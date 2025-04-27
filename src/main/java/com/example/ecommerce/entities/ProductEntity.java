@@ -5,8 +5,11 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -26,7 +29,10 @@ public class ProductEntity {
     private Double price;
     @Column(name = "stock", nullable = false)
     private Integer stockQuantity;
-    private String imageURL;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "image_url")
+    private List<String> imageUrls = new ArrayList<>();
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
     @Enumerated(EnumType.STRING)
@@ -51,5 +57,7 @@ private LocalDateTime createdAt;
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+
 
 }

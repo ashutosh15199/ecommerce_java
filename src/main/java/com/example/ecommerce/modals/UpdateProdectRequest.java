@@ -2,6 +2,7 @@ package com.example.ecommerce.modals;
 
 import com.example.ecommerce.entities.ProductCategory;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class UpdateProdectRequest {
@@ -10,6 +11,6 @@ public class UpdateProdectRequest {
     private String description;
     private Double price;
     private Integer stockQuantity;
-    private String imageURL;
+    private MultipartFile[] imageUrls;
     private ProductCategory productCategory;
 }

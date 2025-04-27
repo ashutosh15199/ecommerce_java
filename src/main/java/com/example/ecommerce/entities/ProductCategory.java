@@ -9,5 +9,6 @@ public enum ProductCategory {
     FURNITURE,
     GROCERY,
     BEAUTY,
-    BOOKS
+    BOOKS,
+    PHONE
 }

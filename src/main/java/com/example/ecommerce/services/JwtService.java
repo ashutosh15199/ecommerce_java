@@ -12,6 +12,8 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 @Service
@@ -75,10 +77,10 @@ public class JwtService {
 
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(getSigninKey()) // Set signing key
+                .setSigningKey(getSigninKey())
                 .build()
                 .parseClaimsJws(token)
-                .getBody(); // Extract payload (Claims)
+                .getBody();
     }
 
 
@@ -91,16 +93,19 @@ public class JwtService {
     }
 
     private String generateToken(User user, long expireTime) {
-        String token = Jwts
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", user.getRole().name());
+        claims.put("id",user.getId());
+        return Jwts
                 .builder()
+                .setClaims(claims)
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expireTime ))
+                .setExpiration(new Date(System.currentTimeMillis() + expireTime))
                 .signWith(getSigninKey())
                 .compact();
-
-        return token;
     }
+
 
     private SecretKey getSigninKey() {
         byte[] keyBytes = Decoders.BASE64URL.decode(secretKey);

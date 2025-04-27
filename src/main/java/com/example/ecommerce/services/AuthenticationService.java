@@ -1,5 +1,6 @@
 package com.example.ecommerce.services;
 
+import com.example.ecommerce.entities.Role;
 import com.example.ecommerce.entities.Token;
 import com.example.ecommerce.entities.User;
 import com.example.ecommerce.modals.AuthenticationResponse;
@@ -44,9 +45,8 @@ public class AuthenticationService {
 
     public AuthenticationResponse register(User request) {
       Optional<User> user = repository.findByUsername(request.getUsername());
-        // check if user already exist. if exist than authenticate the user
         if(user.isPresent()) {
-            return new AuthenticationResponse(null, null,"User already exist");
+            return new AuthenticationResponse(null, null,"User already exist",null,null);
         }
 
         User user1 = new User();
@@ -56,16 +56,16 @@ public class AuthenticationService {
         user1.setPassword(passwordEncoder.encode(request.getPassword()));
 
 
-        user1.setRole(request.getRole());
+        user1.setRole(request.getRole()!=null? request.getRole():Role.USER);
 
         User user2 = repository.save(user1);
 
         String accessToken = jwtService.generateAccessToken(user2);
         String refreshToken = jwtService.generateRefreshToken(user2);
 
-        saveUserToken(accessToken, refreshToken, user1);
+        saveUserToken(accessToken, refreshToken, user2);
 
-        return new AuthenticationResponse(accessToken, refreshToken,"User registration was successful");
+        return new AuthenticationResponse(accessToken, refreshToken,"User registration was successful",user2.getRole().name(),user2.getId());
 
     }
 
@@ -78,13 +78,14 @@ public class AuthenticationService {
         );
 
         User user = repository.findByUsername(request.getUsername()).orElseThrow();
+        Long userId = user.getId();
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
         revokeAllTokenByUser(user);
         saveUserToken(accessToken, refreshToken, user);
 
-        return new AuthenticationResponse(accessToken, refreshToken, "User login was successful");
+        return new AuthenticationResponse(accessToken, refreshToken, "User login was successful",user.getRole().name(),userId);
 
     }
     private void revokeAllTokenByUser(User user) {
@@ -110,7 +111,6 @@ public class AuthenticationService {
     public ResponseEntity refreshToken(
             HttpServletRequest request,
             HttpServletResponse response) {
-        // extract the token from authorization header
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         if(authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -119,23 +119,19 @@ public class AuthenticationService {
 
         String token = authHeader.substring(7);
 
-        // extract username from token
         String username = jwtService.extractUsername(token);
 
-        // check if the user exist in database
         User user = repository.findByUsername(username)
                 .orElseThrow(()->new RuntimeException("No user found"));
 
-        // check if the token is valid
         if(jwtService.isValidRefreshToken(token, user)) {
-            // generate access token
             String accessToken = jwtService.generateAccessToken(user);
             String refreshToken = jwtService.generateRefreshToken(user);
 
             revokeAllTokenByUser(user);
             saveUserToken(accessToken, refreshToken, user);
 
-            return new ResponseEntity(new AuthenticationResponse(accessToken, refreshToken, "New token generated"), HttpStatus.OK);
+            return new ResponseEntity(new AuthenticationResponse(accessToken, refreshToken, "New token generated",user.getRole().name(),user.getId()), HttpStatus.OK);
         }
 
         return new ResponseEntity(HttpStatus.UNAUTHORIZED);
