@@ -38,5 +38,6 @@ jobs:
         uses: advanced-security/maven-dependency-submission-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          ignore-maven-wrapper: true   # <--- Add this line to ignore mvnw and use system mvn
         env:
           MAVEN_EXECUTABLE: mvn
