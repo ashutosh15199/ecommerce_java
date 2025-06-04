@@ -38,3 +38,5 @@ jobs:
         uses: advanced-security/maven-dependency-submission-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          MAVEN_EXECUTABLE: mvn
