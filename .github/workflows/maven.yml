@@ -9,7 +9,6 @@ on:
 permissions:
   contents: read
   security-events: write  # Required for dependency graph submission
-  dependencies: write     # <-- Add this line to allow dependency graph submission
 
 jobs:
   build:
